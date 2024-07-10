@@ -39,12 +39,12 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float MovementSpeed;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement") 
     float RotationSpeed;
 
     //Target Player
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
-    AEscapeRoomCharacter* PlayerCharacter;
+    TObjectPtr<AActor> PlayerCharacter;
 
     //Bat 능력 함수
     UFUNCTION(BlueprintCallable, Category = "Abilities")
@@ -60,6 +60,5 @@ private:
     FVector LastPlayerLocation;
 
     void MoveBat(float DeltaTime, const FVector& DirectionToPlayer);
-    void UpdateBatMovement(float DeltaTime, const FVector& PlayerLocation, const FVector& BatLocation, const FVector& DirectionToPlayer, float DistanceToPlayer);
-    void HandleRotation(float DeltaTime, const FVector& DirectionToPlayer);
+    void UpdateMovementAndRotation(float DeltaTime);
 };
