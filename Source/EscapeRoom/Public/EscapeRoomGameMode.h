@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "EscapeRoom.h"
 #include "GameFramework/GameModeBase.h"
 #include "EscapeRoomGameMode.generated.h"
 

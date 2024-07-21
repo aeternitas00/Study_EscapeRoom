@@ -2,10 +2,14 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "EscapeRoom.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "EscapeRoomCharacter.generated.h"
+
+// ========================
+// Example code
+// ========================
 
 class USpringArmComponent;
 class UCameraComponent;
@@ -13,7 +17,6 @@ class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
 
-DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
 class AEscapeRoomCharacter : public ACharacter
