@@ -2,9 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "Components/SkeletalMeshComponent.h"
 #include "Components/SphereComponent.h"
-#include "EscapeRoomCharacter.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "GameFramework/FloatingPawnMovement.h"
 #include "BatPet.generated.h"
 
 UCLASS()
@@ -15,38 +15,34 @@ class ESCAPEROOM_API ABatPet : public APawn
 public:
     ABatPet();
 
-protected:
-    virtual void BeginPlay() override;
-
 public:
     virtual void Tick(float DeltaTime) override;
 
-    //모델
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-    USkeletalMeshComponent* SkeletalMeshComponent;
-
-    //충돌을 위한 콜리전
+    // Components
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     USphereComponent* SphereCollider;
 
-    //Bat Status
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    USkeletalMeshComponent* SkeletalMeshComponent;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    UFloatingPawnMovement* MovementComponent;
+
+    // Movement
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-    float BatRange_Idle;
+    float BatRange_Min;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-    float BatRange_Move;
+    float BatRange_Max = 1000;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-    float MovementSpeed;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement") 
     float RotationSpeed;
 
-    //Target Player
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+    // Target Character
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TargetCharacter")
     TObjectPtr<AActor> PlayerCharacter;
 
-    //Bat 능력 함수
+    // Abilities
     UFUNCTION(BlueprintCallable, Category = "Abilities")
     void MoveTowardsDirection(FVector TargetLocation);
 
@@ -57,8 +53,9 @@ private:
     FVector TargetLocation;
     bool bIsMovingToTarget;
     bool bIsWaiting;
-    FVector LastPlayerLocation;
 
-    void MoveBat(float DeltaTime, const FVector& DirectionToPlayer);
-    void UpdateMovementAndRotation(float DeltaTime);
+    void CheckToTarget();
+    void HandleMovementAndRotation(float DeltaTime);
+    void UpdateCustomDepthOnMovement();
+    FVector CalculateDirection(FVector TargetLocationValue);
 };

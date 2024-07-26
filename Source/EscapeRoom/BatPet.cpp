@@ -1,132 +1,120 @@
 #include "BatPet.h"
 #include "GameFramework/PlayerController.h"
-#include "GameFramework/Character.h"
 #include "Engine/World.h"
+#include "GameFramework/FloatingPawnMovement.h"
+#include "Components/SkeletalMeshComponent.h"
 
 ABatPet::ABatPet()
 {
     PrimaryActorTick.bCanEverTick = true;
 
-    SkeletalMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComponent"));
-    SetRootComponent(SkeletalMeshComponent);
-
+    // Sphere Collider Settings
     SphereCollider = CreateDefaultSubobject<USphereComponent>(TEXT("SphereCollider"));
-    SphereCollider->SetupAttachment(RootComponent);
-    SphereCollider->SetSphereRadius(50.0f);
+    SetRootComponent(SphereCollider);
+    SphereCollider->SetSphereRadius(150.0f);
     SphereCollider->SetCollisionProfileName(TEXT("Pawn"));
+    SphereCollider->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+    SphereCollider->SetUseCCD(true);
 
-    BatRange_Idle = 300.0f;
-    BatRange_Move = 1000.0f;
-    MovementSpeed = 800.0f;
-    RotationSpeed = 2.0f;
+    // Skeletal Mesh Settings
+    SkeletalMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComponent"));
+    SkeletalMeshComponent->SetupAttachment(RootComponent);
+
+    // MovementComponent Settings
+    MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MovementComponent"));
+    MovementComponent->UpdatedComponent = RootComponent;
+    MovementComponent->MaxSpeed = 600.0f;
+
     bIsMovingToTarget = false;
     bIsWaiting = false;
-}
-
-void ABatPet::BeginPlay()
-{
-    Super::BeginPlay();
-
-    if (PlayerCharacter)
-    {
-        LastPlayerLocation = PlayerCharacter->GetActorLocation();
-    }
 }
 
 void ABatPet::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+
+    // Player Check
     if (!PlayerCharacter) return;
-    UpdateMovementAndRotation(DeltaTime);
+
+    CheckToTarget();
+    HandleMovementAndRotation(DeltaTime);
+    UpdateCustomDepthOnMovement();
 }
 
-//박쥐 행동 조건 업뎃
-void ABatPet::UpdateMovementAndRotation(float DeltaTime)
+// CheckTarget
+void ABatPet::CheckToTarget()
 {
-    // 플레이어 위치 / 박쥐 위치 / 방향 / 거리
+    if (bIsMovingToTarget && FVector::Dist(GetActorLocation(), TargetLocation) <= 100.0f) {
+        bIsMovingToTarget = false;
+        bIsWaiting = true;
+    }
+}
+
+// Move and Rotation
+void ABatPet::HandleMovementAndRotation(float DeltaTime)
+{
     FVector PlayerLocation = PlayerCharacter->GetActorLocation();
     FVector BatLocation = GetActorLocation();
-    FVector DirectionToPlayer = (PlayerLocation - BatLocation).GetSafeNormal();
+    FVector DirectionToPlayer = CalculateDirection(PlayerLocation);
     float DistanceToPlayer = FVector::Dist(BatLocation, PlayerLocation);
 
-    // 플레이어와 거리가 멀어지면 이동
-    if (!bIsMovingToTarget && !bIsWaiting && DistanceToPlayer > BatRange_Idle) {
-        TargetLocation = PlayerLocation;
-        MoveBat(DeltaTime, DirectionToPlayer);
-    }
-    // 타겟이 지정된 경우
-    else if (bIsMovingToTarget) {
-        MoveBat(DeltaTime, DirectionToPlayer);
-    }
-
-    //플레이어 바라보는 각도
-    FRotator CurrentRotation = GetActorRotation();
-    FRotator TargetRotation = DirectionToPlayer.Rotation() + FRotator(0, 90, 0);
-    FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, DeltaTime, RotationSpeed);
-
-    SetActorRotation(NewRotation);
-}
-
-//박쥐 이동 함수
-void ABatPet::MoveBat(float DeltaTime, const FVector& DirectionToPlayer)
-{
-    // 현재 위치와 방향
-    FVector CurrentLocation = GetActorLocation();
-    FVector Direction = (TargetLocation - CurrentLocation).GetSafeNormal();
-    FVector NewLocation = CurrentLocation + Direction * MovementSpeed * DeltaTime;
-
-    // 벽 충돌 감지
-    FHitResult HitResult;
-    FCollisionQueryParams Params;
-    Params.AddIgnoredActor(this);
-    // 충돌 시 멈춤
-    if (GetWorld()->SweepSingleByChannel(HitResult, CurrentLocation, NewLocation, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(SphereCollider->GetScaledSphereRadius()), Params)) {
-        bIsMovingToTarget = false;
-    }
-    else {
-        SetActorLocation(NewLocation);
-        if (FVector::Dist(NewLocation, TargetLocation) <= 100.0f) {
-            bIsMovingToTarget = false;
-            bIsWaiting = true;
+    if (!bIsMovingToTarget && !bIsWaiting) {
+        if (DistanceToPlayer > BatRange_Min) {
+            MovementComponent->AddInputVector(DirectionToPlayer);
         }
     }
+    else if (bIsMovingToTarget) {
+        FVector DirectionToTarget = CalculateDirection(TargetLocation);
+        MovementComponent->AddInputVector(DirectionToTarget);
+    }
+
+    FRotator TargetRotation = DirectionToPlayer.Rotation();
+    SetActorRotation(FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaTime, RotationSpeed));
 }
 
-// 지정위치로 이동하는 함수 Q
+FVector ABatPet::CalculateDirection(FVector TargetLocationValue)
+{
+    return (TargetLocationValue - GetActorLocation()).GetSafeNormal();
+}
+
+// Move Ability
 void ABatPet::MoveTowardsDirection(FVector NewTargetLocation)
 {
     if (bIsWaiting) {
-        // 대기 상태에서 Q를 다시 누르면 플레이어를 따라다니는 상태로 전환
         bIsWaiting = false;
-        bIsMovingToTarget = false; // 이동 중지, 플레이어 따라다니기 재개
-        UE_LOG(LogTemp, Warning, TEXT("Resuming following the player."));
+        bIsMovingToTarget = false;
     }
     else {
-        // 처음 Q를 누르면 타겟 지점으로 이동
         TargetLocation = NewTargetLocation;
         bIsMovingToTarget = true;
-        bIsWaiting = true; // 대기 상태 활성화
-        UE_LOG(LogTemp, Warning, TEXT("Moving to new target location: %s"), *TargetLocation.ToString());
+        bIsWaiting = false;
     }
 }
 
-//플레이어와 위치 스왑 E
+// Swap Ability
 void ABatPet::SwapWithPlayer()
 {
-    // 플레이어랑 박쥐 위치 변경
     if (PlayerCharacter)
     {
         FVector PlayerLocation = PlayerCharacter->GetActorLocation();
         FVector BatLocation = GetActorLocation();
-
         PlayerCharacter->SetActorLocation(BatLocation);
         SetActorLocation(PlayerLocation);
-
         bIsMovingToTarget = false;
-        UE_LOG(LogTemp, Warning, TEXT("Swap Success"));
     }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("Swap Fail: PlayerCharacter is not valid"));
+}
+
+// Outline Func
+void ABatPet::UpdateCustomDepthOnMovement()
+{
+    FVector PlayerLocation = PlayerCharacter->GetActorLocation();
+    FVector BatLocation = GetActorLocation();
+    float DistanceToPlayer = FVector::Dist(BatLocation, PlayerLocation);
+
+    if (DistanceToPlayer < BatRange_Min + 50.0f) {
+        SkeletalMeshComponent->SetRenderCustomDepth(false);
+    }
+    else {
+        SkeletalMeshComponent->SetRenderCustomDepth(true);
     }
 }
