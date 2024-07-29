@@ -8,7 +8,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "EscapeRoomTags.h"
-
+#include "GameFrameWork/Character.h"
 
 // Sets default values for this component's properties
 UEscapeRoomInteractionComponent::UEscapeRoomInteractionComponent()
@@ -22,10 +22,10 @@ UEscapeRoomInteractionComponent::UEscapeRoomInteractionComponent()
 
 
 // Called when the game starts
-void UEscapeRoomInteractionComponent::BeginPlay()
-{
-	Super::BeginPlay();
-}
+//void UEscapeRoomInteractionComponent::BeginPlay()
+//{
+//	Super::BeginPlay();
+//}
 
 
 // Called every frame
@@ -48,7 +48,7 @@ void UEscapeRoomInteractionComponent::TickComponent(float DeltaTime, ELevelTick 
 	}
 }
 
-void UEscapeRoomInteractionComponent::BindActions(UEnhancedInputComponent* InputComponent)
+void UEscapeRoomInteractionComponent::BindNativeActions(UEnhancedInputComponent* InputComponent)
 {
 	if(!NativeInputActions.Find(EscapeRoomTags::InputTag_Interact)) return;
 
@@ -58,17 +58,9 @@ void UEscapeRoomInteractionComponent::BindActions(UEnhancedInputComponent* Input
 
 void UEscapeRoomInteractionComponent::GetTracePoints(FVector& outSVec, FVector& outEVec)
 {
-	if(GetOwner()->IsA<AController>()){
-		FRotator SRot;
-		Cast<AController>(GetOwner())->GetPlayerViewPoint(outSVec,SRot);
-		outEVec = outSVec + SRot.Vector()*800.0f;
-	}
-
-	//else if(GetOwner()->IsA<ACharacter>()){
-		//FRotator SRot;
-		//Cast<ACharacter>(GetOwner())->GetEyePoint(outSVec,SRot);
-		//outEVec = SRot.Vector()*800.0f;
-	//}
+	FRotator SRot;
+	GetOwner()->GetActorEyesViewPoint(outSVec,SRot);
+	outEVec = outSVec + SRot.Vector()*800.0f;
 }
 
 bool UEscapeRoomInteractionComponent::SearchInteractingTarget(TScriptInterface<IEscapeRoomInteractable>& outActor)
@@ -84,7 +76,7 @@ bool UEscapeRoomInteractionComponent::SearchInteractingTarget(TScriptInterface<I
 
 	bool bHit = GetWorld()->LineTraceSingleByObjectType(HitResult, SVec, EVec, ECC_GameTraceChannel1, CollisionParams);
 
-	DrawDebugLineTraceSingle(GetWorld(), SVec, EVec,EDrawDebugTrace::ForOneFrame,bHit,HitResult,FLinearColor::Red,FLinearColor::Green,5.0f);
+	//DrawDebugLineTraceSingle(GetWorld(), SVec, EVec,EDrawDebugTrace::ForOneFrame,bHit,HitResult,FLinearColor::Red,FLinearColor::Green,5.0f);
 	if(bHit && HitResult.GetActor()->Implements<UEscapeRoomInteractable>())
 	{
 		outActor = HitResult.GetActor();
@@ -108,6 +100,7 @@ void UEscapeRoomInteractionComponent::Interact_Implementation(const FInputAction
 	SetInteractionLock(true);
 
 	InteractingObject = InspectingObject;
+	InspectingObject = nullptr;
 
 	IEscapeRoomInteractable::Execute_StartInteract(InteractingObject.GetObject(),GetOwner());
 

@@ -36,14 +36,6 @@ protected:
 	//virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent);
 
 public:
-	
-	UFUNCTION(BlueprintImplementableEvent)
-	void MainAbility(const FInputActionInstance& Instance);
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void SubAbility1(const FInputActionInstance& Instance);
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void SubAbility2(const FInputActionInstance& Instance);
 };
 
