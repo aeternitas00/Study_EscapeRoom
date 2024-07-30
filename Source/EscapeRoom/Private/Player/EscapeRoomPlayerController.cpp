@@ -25,23 +25,16 @@ AEscapeRoomPlayerController::AEscapeRoomPlayerController()
 void AEscapeRoomPlayerController::BeginPlay()
 {
     Super::BeginPlay();
-}
 
-void AEscapeRoomPlayerController::OnPossess(APawn* aPawn)
-{
-	Super::OnPossess(aPawn);
-
-	// Reset binded actions
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 	{
-		Subsystem->AddMappingContext(CharacterMappingContext, 0);
+		Subsystem->AddMappingContext(CommonMappingContext, 0);
 	}
 
 	// Set up action bindings
+
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
 	{	
-		// There must be a better way... 
-
 		// Natives
 		EnhancedInputComponent->BindAction(GeneralInputActions[EscapeRoomTags::InputTag_Move], ETriggerEvent::Triggered, this, &ThisClass::Move);
 		EnhancedInputComponent->BindAction(GeneralInputActions[EscapeRoomTags::InputTag_Look], ETriggerEvent::Triggered, this, &ThisClass::Look);
@@ -49,20 +42,16 @@ void AEscapeRoomPlayerController::OnPossess(APawn* aPawn)
 		EnhancedInputComponent->BindAction(GeneralInputActions[EscapeRoomTags::InputTag_Jump], ETriggerEvent::Started, this, &ThisClass::Jump);
 		EnhancedInputComponent->BindAction(GeneralInputActions[EscapeRoomTags::InputTag_Jump], ETriggerEvent::Completed, this, &ThisClass::JumpEnd);
 
-		// 인풋을 가질 수 있는 컴포넌트로 일괄 처리?
-		//auto IntComp = GetPawn()->GetComponentByClass<UEscapeRoomInteractionComponent>(); 
-		//if (IntComp) IntComp->BindActions(EnhancedInputComponent);
-		
-		TArray<UEscapeRoomIABindableComponent*> BindableComponents;
-		GetPawn()->GetComponents<UEscapeRoomIABindableComponent>(BindableComponents);
-
-		for(auto& BindComp : BindableComponents)
-			BindComp->BindActions(EnhancedInputComponent);
 	}
 	else
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+}
+
+void AEscapeRoomPlayerController::OnPossess(APawn* aPawn)
+{
+	Super::OnPossess(aPawn);
 }
 
 void AEscapeRoomPlayerController::Move(const FInputActionValue& Value)

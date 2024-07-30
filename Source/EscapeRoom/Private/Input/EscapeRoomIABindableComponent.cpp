@@ -3,7 +3,18 @@
 
 #include "Input/EscapeRoomIABindableComponent.h"
 #include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 #include "InputAction.h"
+
+void UEscapeRoomIABindableComponent::AddMappingContext(UEnhancedInputLocalPlayerSubsystem* Subsystem)
+{
+	Subsystem->AddMappingContext(ComponentMappingContext, MappingContextPriority);
+}
+
+void UEscapeRoomIABindableComponent::RemoveMappingContext(UEnhancedInputLocalPlayerSubsystem* Subsystem)
+{
+	Subsystem->RemoveMappingContext(ComponentMappingContext);
+}
 
 void UEscapeRoomIABindableComponent::BindActions(UEnhancedInputComponent* InputComponent)
 {	
@@ -45,3 +56,4 @@ void UEscapeRoomIABindableComponent::SendTaggedInputToOwner_Implementation(const
 	//else if(InputTag == EscapeRoomTags::InputTag_SubAbility2)
 	//	LocalPawn->SubAbility2(Instance);
 }
+

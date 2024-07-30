@@ -26,7 +26,7 @@ class ESCAPEROOM_API AEscapeRoomPlayerController : public APlayerController
 	
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	TObjectPtr<const UInputMappingContext> CharacterMappingContext;
+	TObjectPtr<const UInputMappingContext> CommonMappingContext;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
 	TMap<FGameplayTag, TObjectPtr<const UInputAction>> GeneralInputActions;

@@ -8,7 +8,10 @@
 #include "EscapeRoomIABindableComponent.generated.h"
 
 class UInputAction;
+class UInputMappingContext;
 class UEnhancedInputComponent;
+class UEnhancedInputLocalPlayerSubsystem;
+
 struct FInputActionInstance;
 
 USTRUCT(BlueprintType)
@@ -30,6 +33,12 @@ class ESCAPEROOM_API UEscapeRoomIABindableComponent : public UActorComponent
 	GENERATED_BODY()
 
 protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	TObjectPtr<const UInputMappingContext> ComponentMappingContext;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	int32 MappingContextPriority = 1;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
 	TMap<FGameplayTag, TObjectPtr<const UInputAction>> NativeInputActions;
 
@@ -44,4 +53,6 @@ protected:
 	virtual void SendTaggedInputToOwner_Implementation(const FInputActionInstance& Instance, const FGameplayTag& InputTag);
 public:
 	void BindActions(UEnhancedInputComponent* InputComponent);
+	void AddMappingContext(UEnhancedInputLocalPlayerSubsystem* Subsystem);
+	void RemoveMappingContext(UEnhancedInputLocalPlayerSubsystem* Subsystem);
 };

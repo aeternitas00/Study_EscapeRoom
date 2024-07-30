@@ -49,11 +49,59 @@ void AEscapeRoomCharacterBase::BeginPlay()
 //////////////////////////////////////////////////////////////////////////
 // Input
 
-//void AEscapeRoomCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-//{
-//	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-//		auto IntComp = GetComponentByClass<UEscapeRoomInteractionComponent>(); 
-//		if (IntComp) IntComp->BindActions(EnhancedInputComponent);
-//	}
-//}
+void AEscapeRoomCharacterBase::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	TArray<UEscapeRoomIABindableComponent*> BindableComponents;
+	GetComponents<UEscapeRoomIABindableComponent>(BindableComponents);
+
+	if (APlayerController* PlayerController = Cast<APlayerController>(NewController))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			for(auto& BindComp : BindableComponents)
+				BindComp->AddMappingContext(Subsystem);
+		}
+	}
+
+	// Set up action bindings
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(NewController->InputComponent))
+	{
+		for(auto& BindComp : BindableComponents)
+			BindComp->BindActions(EnhancedInputComponent);
+	}
+	else
+	{
+		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+	}
+
+}
+
+void AEscapeRoomCharacterBase::UnPossessed()
+{	
+	// Clear context before engine nullify Controller ref
+	TArray<UEscapeRoomIABindableComponent*> BindableComponents;
+	GetComponents<UEscapeRoomIABindableComponent>(BindableComponents);
+
+	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			for(auto& BindComp : BindableComponents)
+				BindComp->RemoveMappingContext(Subsystem);
+		}
+	}
+
+	// This will nullify controller ref
+	Super::UnPossessed();
+}
+
+void AEscapeRoomCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent); 
+
+	// Param "PlayerInputComponent" is PawnInputComponent.
+	// We'll use PlayerController's InputComponent; IAs binded to PawnInputComponent won't working if any IA bound to PC_InputComponent.
+}
 

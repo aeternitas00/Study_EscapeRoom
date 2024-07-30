@@ -27,14 +27,10 @@ public:
 	AEscapeRoomCharacterBase();
 	
 protected:
-	// APawn interface
-	//virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	
-	// To add mapping context
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void UnPossessed() override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void BeginPlay();
-
-	//virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent);
-
 public:
 
 };
