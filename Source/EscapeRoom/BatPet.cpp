@@ -7,6 +7,8 @@
 ABatPet::ABatPet()
 {
     PrimaryActorTick.bCanEverTick = true;
+    
+    AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
     // Sphere Collider Settings
     SphereCollider = CreateDefaultSubobject<USphereComponent>(TEXT("SphereCollider"));
@@ -64,10 +66,10 @@ void ABatPet::HandleMovementAndRotation(float DeltaTime)
     FVector DirectionToPlayer = CalculateDirection(PlayerLocation);
     float DistanceToPlayer = FVector::Dist(BatLocation, PlayerLocation);
 
-    UE_LOG(LogTemp, Log, TEXT("DistanceToPlayer: %f, BatRange_Min: %f"), DistanceToPlayer, BatRange_Min);
-
     if (!bIsMovingToTarget && !bIsWaiting)
     {
+        UE_LOG(LogTemp, Log, TEXT("DistanceToPlayer: %f, BatRange_Min: %f"), DistanceToPlayer, BatRange_Min);
+
         if (DistanceToPlayer > BatRange_Min)
         {
             UE_LOG(LogTemp, Log, TEXT("Adding input vector towards player."));
@@ -76,6 +78,8 @@ void ABatPet::HandleMovementAndRotation(float DeltaTime)
     }
     else if (bIsMovingToTarget)
     {
+        //UE_LOG(LogTemp, Log, TEXT("DistanceToPlayer: %f, BatRange_Min: %f"), DistanceToPlayer, BatRange_Min);
+
         FVector DirectionToTarget = CalculateDirection(TargetLocation);
         MovementComponent->AddInputVector(DirectionToTarget, true);
     }

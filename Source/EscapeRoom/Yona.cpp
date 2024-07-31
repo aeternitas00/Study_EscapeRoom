@@ -5,6 +5,7 @@
 #include "Camera/PlayerCameraManager.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/SpringArmComponent.h"  
+#include "AIController.h"
 
 AYona::AYona()
 {
@@ -20,7 +21,11 @@ void AYona::BeginPlay()
 
     FActorSpawnParameters SpawnParams;
     SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+    //SpawnParams.Owner = this;
+    
     if (!BatPetClass) return;
+
+    //auto PetAICon = GetWorld()->SpawnActor<AAIController>();
 	MyPet = GetWorld()->SpawnActor<ABatPet>(BatPetClass, Location, Rotation, SpawnParams);
 
     if (MyPet)
@@ -71,6 +76,9 @@ void AYona::MovePetDirect()
         FVector TargetLocation = Hit.bBlockingHit ? Hit.ImpactPoint : End;
         MyPet->MoveTowardsDirection(TargetLocation);
     }
+    else 
+        MyPet->MoveTowardsDirection(End);
+    
 }
 
 
