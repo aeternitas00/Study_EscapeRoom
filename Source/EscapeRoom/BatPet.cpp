@@ -53,24 +53,37 @@ void ABatPet::CheckToTarget()
 // Move and Rotation
 void ABatPet::HandleMovementAndRotation(float DeltaTime)
 {
+    if (!PlayerCharacter)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("PlayerCharacter is not set."));
+        return;
+    }
+
     FVector PlayerLocation = PlayerCharacter->GetActorLocation();
     FVector BatLocation = GetActorLocation();
     FVector DirectionToPlayer = CalculateDirection(PlayerLocation);
     float DistanceToPlayer = FVector::Dist(BatLocation, PlayerLocation);
 
-    if (!bIsMovingToTarget && !bIsWaiting) {
-        if (DistanceToPlayer > BatRange_Min) {
-            MovementComponent->AddInputVector(DirectionToPlayer);
+    UE_LOG(LogTemp, Log, TEXT("DistanceToPlayer: %f, BatRange_Min: %f"), DistanceToPlayer, BatRange_Min);
+
+    if (!bIsMovingToTarget && !bIsWaiting)
+    {
+        if (DistanceToPlayer > BatRange_Min)
+        {
+            UE_LOG(LogTemp, Log, TEXT("Adding input vector towards player."));
+            MovementComponent->AddInputVector(DirectionToPlayer, true);
         }
     }
-    else if (bIsMovingToTarget) {
+    else if (bIsMovingToTarget)
+    {
         FVector DirectionToTarget = CalculateDirection(TargetLocation);
-        MovementComponent->AddInputVector(DirectionToTarget);
+        MovementComponent->AddInputVector(DirectionToTarget, true);
     }
 
     FRotator TargetRotation = DirectionToPlayer.Rotation();
     SetActorRotation(FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaTime, RotationSpeed));
 }
+
 
 FVector ABatPet::CalculateDirection(FVector TargetLocationValue)
 {
