@@ -7,6 +7,14 @@
 #include "GameFramework/FloatingPawnMovement.h"
 #include "BatPet.generated.h"
 
+UENUM(BlueprintType)
+enum class EBatPetState : uint8
+{
+    Idle,
+    MovingToTarget,
+    Waiting
+};
+
 UCLASS()
 class ESCAPEROOM_API ABatPet : public APawn
 {
@@ -15,7 +23,6 @@ class ESCAPEROOM_API ABatPet : public APawn
 public:
     ABatPet();
 
-public:
     virtual void Tick(float DeltaTime) override;
 
     // Components
@@ -33,29 +40,31 @@ public:
     float BatRange_Min;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-    float BatRange_Max = 1000;
+    float BatRange_Max;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float RotationSpeed;
 
+
     // Target Character
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TargetCharacter")
-    TObjectPtr<AActor> PlayerCharacter;
+    ACharacter* PlayerCharacter;
 
-    // Abilities
+    FVector TargetLocation;
+
     UFUNCTION(BlueprintCallable, Category = "Abilities")
-    void MoveTowardsDirection(FVector TargetLocation);
+    void MoveTowardsDirection(FVector NewTargetLocation);
 
     UFUNCTION(BlueprintCallable, Category = "Abilities")
     void SwapWithPlayer();
 
-private:
-    FVector TargetLocation;
-    bool bIsMovingToTarget;
-    bool bIsWaiting;
-
-    void CheckToTarget();
-    void HandleMovementAndRotation(float DeltaTime);
-    void UpdateCustomDepthOnMovement();
+    void LookAtTarget(FVector TargetLocation, float DeltaTime);
+    void MoveAndLookAtTarget(float DeltaTime, FVector NewTargetLocation);
     FVector CalculateDirection(FVector TargetLocationValue);
+
+    void UpdateCustomDepthOnMovement();
+    void CheckToTarget();
+
+private:
+    EBatPetState CurrentState = EBatPetState::Idle;
 };

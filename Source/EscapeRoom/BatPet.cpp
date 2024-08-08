@@ -1,13 +1,15 @@
 #include "BatPet.h"
 #include "GameFramework/PlayerController.h"
 #include "Engine/World.h"
+#include "GameFramework/Character.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 ABatPet::ABatPet()
 {
     PrimaryActorTick.bCanEverTick = true;
-    
+
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
     // Sphere Collider Settings
@@ -26,67 +28,70 @@ ABatPet::ABatPet()
     MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MovementComponent"));
     MovementComponent->UpdatedComponent = RootComponent;
     MovementComponent->MaxSpeed = 600.0f;
-
-    bIsMovingToTarget = false;
-    bIsWaiting = false;
 }
+
 
 void ABatPet::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    // Player Check
     if (!PlayerCharacter) return;
-
-    CheckToTarget();
-    HandleMovementAndRotation(DeltaTime);
-    UpdateCustomDepthOnMovement();
-}
-
-// CheckTarget
-void ABatPet::CheckToTarget()
-{
-    if (bIsMovingToTarget && FVector::Dist(GetActorLocation(), TargetLocation) <= 100.0f) {
-        bIsMovingToTarget = false;
-        bIsWaiting = true;
-    }
-}
-
-// Move and Rotation
-void ABatPet::HandleMovementAndRotation(float DeltaTime)
-{
-    if (!PlayerCharacter)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("PlayerCharacter is not set."));
-        return;
-    }
 
     FVector PlayerLocation = PlayerCharacter->GetActorLocation();
     FVector BatLocation = GetActorLocation();
-    FVector DirectionToPlayer = CalculateDirection(PlayerLocation);
     float DistanceToPlayer = FVector::Dist(BatLocation, PlayerLocation);
 
-    if (!bIsMovingToTarget && !bIsWaiting)
+    switch (CurrentState)
     {
-        UE_LOG(LogTemp, Log, TEXT("DistanceToPlayer: %f, BatRange_Min: %f"), DistanceToPlayer, BatRange_Min);
-
+    case EBatPetState::Idle:
         if (DistanceToPlayer > BatRange_Min)
         {
-            UE_LOG(LogTemp, Log, TEXT("Adding input vector towards player."));
+            FVector DirectionToPlayer = CalculateDirection(PlayerLocation);
             MovementComponent->AddInputVector(DirectionToPlayer, true);
         }
+        LookAtTarget(PlayerLocation, DeltaTime);
+        break;
+    case EBatPetState::MovingToTarget:
+        MoveAndLookAtTarget(DeltaTime, TargetLocation);
+        break;
+    case EBatPetState::Waiting:
+        LookAtTarget(PlayerLocation, DeltaTime);
+        break;
     }
-    else if (bIsMovingToTarget)
+
+    UpdateCustomDepthOnMovement();
+}
+
+void ABatPet::CheckToTarget()
+{
+    FVector PlayerLocation = PlayerCharacter->GetActorLocation();
+    float DistanceToPlayer = FVector::Dist(GetActorLocation(), PlayerLocation);
+
+    if (DistanceToPlayer > BatRange_Min)
     {
-        //UE_LOG(LogTemp, Log, TEXT("DistanceToPlayer: %f, BatRange_Min: %f"), DistanceToPlayer, BatRange_Min);
-
-        FVector DirectionToTarget = CalculateDirection(TargetLocation);
-        MovementComponent->AddInputVector(DirectionToTarget, true);
+        CurrentState = EBatPetState::MovingToTarget;
+        TargetLocation = PlayerLocation;
     }
+}
 
-    FRotator TargetRotation = DirectionToPlayer.Rotation();
+void ABatPet::MoveAndLookAtTarget(float DeltaTime, FVector NewTargetLocation)
+{
+    FVector DirectionToTarget = CalculateDirection(NewTargetLocation);
+    MovementComponent->AddInputVector(DirectionToTarget, true);
+    LookAtTarget(NewTargetLocation, DeltaTime);
+
+    if (FVector::Dist(GetActorLocation(), NewTargetLocation) <= 100.0f) {
+        CurrentState = EBatPetState::Waiting;
+    }
+}
+
+void ABatPet::LookAtTarget(FVector NewTargetLocation, float DeltaTime)
+{
+    FVector DirectionToTarget = CalculateDirection(NewTargetLocation);
+    FRotator TargetRotation = DirectionToTarget.Rotation();
     SetActorRotation(FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaTime, RotationSpeed));
 }
+
 
 
 FVector ABatPet::CalculateDirection(FVector TargetLocationValue)
@@ -94,17 +99,15 @@ FVector ABatPet::CalculateDirection(FVector TargetLocationValue)
     return (TargetLocationValue - GetActorLocation()).GetSafeNormal();
 }
 
-// Move Ability
+// MoveToTarget Ability
 void ABatPet::MoveTowardsDirection(FVector NewTargetLocation)
 {
-    if (bIsWaiting) {
-        bIsWaiting = false;
-        bIsMovingToTarget = false;
+    TargetLocation = NewTargetLocation;
+    if (CurrentState == EBatPetState::Waiting) {
+        CurrentState = EBatPetState::Idle;
     }
     else {
-        TargetLocation = NewTargetLocation;
-        bIsMovingToTarget = true;
-        bIsWaiting = false;
+        CurrentState = EBatPetState::MovingToTarget;
     }
 }
 
@@ -117,7 +120,7 @@ void ABatPet::SwapWithPlayer()
         FVector BatLocation = GetActorLocation();
         PlayerCharacter->SetActorLocation(BatLocation);
         SetActorLocation(PlayerLocation);
-        bIsMovingToTarget = false;
+        CurrentState = EBatPetState::Waiting;
     }
 }
 
