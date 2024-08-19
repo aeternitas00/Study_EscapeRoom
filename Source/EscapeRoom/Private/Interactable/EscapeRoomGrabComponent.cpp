@@ -22,9 +22,9 @@ void UEscapeRoomGrabComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 
 void UEscapeRoomGrabComponent::GrabActor(AActor* inActor)
 {
-	UPrimitiveComponent* PrimComp;
+	UPrimitiveComponent* PrimComp = inActor ? inActor->GetComponentByClass<UPrimitiveComponent>() : nullptr;
 
-	if(!inActor || !(PrimComp = inActor->GetComponentByClass<UPrimitiveComponent>())) return;
+	if(!PrimComp) return;
 
 	GrabComponentAtLocationWithRotation(PrimComp,NAME_None,inActor->GetActorLocation(),inActor->GetActorRotation());
 
