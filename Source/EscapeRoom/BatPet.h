@@ -5,6 +5,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/FloatingPawnMovement.h"
+#include "BehaviorTree/BehaviorTree.h"
 #include "BatPet.generated.h"
 
 UENUM(BlueprintType)
@@ -22,7 +23,7 @@ class ESCAPEROOM_API ABatPet : public APawn
 
 public:
     ABatPet();
-
+    virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
 
     // Components
@@ -52,6 +53,9 @@ public:
 
     FVector TargetLocation;
 
+    UPROPERTY(EditDefaultsOnly, Category = "AI")
+    UBehaviorTree* BehaviorTreeAsset;
+
     UFUNCTION(BlueprintCallable, Category = "Abilities")
     void MoveTowardsDirection(FVector NewTargetLocation);
 
@@ -65,6 +69,7 @@ public:
     void UpdateCustomDepthOnMovement();
     void CheckToTarget();
 
-private:
+protected:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enum")
     EBatPetState CurrentState = EBatPetState::Idle;
 };
