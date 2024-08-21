@@ -21,17 +21,14 @@ void AYona::BeginPlay()
 
     FActorSpawnParameters SpawnParams;
     SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
-    //SpawnParams.Owner = this;
+    SpawnParams.Owner = this;
     
     if (!BatPetClass) return;
 
-    //auto PetAICon = GetWorld()->SpawnActor<AAIController>();
 	MyPet = GetWorld()->SpawnActor<ABatPet>(BatPetClass, Location, Rotation, SpawnParams);
 
-    if (MyPet)
-    {
-        MyPet->PlayerCharacter = this;
-    }
+    if (MyPet) MyPet->SetOwnerCharacter(this);
+    
 }
 
 

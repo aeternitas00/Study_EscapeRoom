@@ -13,7 +13,7 @@
 ABatPet::ABatPet()
 {
     PrimaryActorTick.bCanEverTick = true;
-
+    //PrimaryActorTick.TickGroup = ETickingGroup::TG_PostPhysics;
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
     // Sphere Collider Settings
@@ -38,9 +38,7 @@ void ABatPet::BeginPlay()
     Super::BeginPlay();
     AAIController* AIController = Cast<AAIController>(GetController());
     if (AIController && BehaviorTreeAsset)
-    {
         AIController->RunBehaviorTree(BehaviorTreeAsset);
-    }
 }
 
 void ABatPet::Tick(float DeltaTime)
@@ -49,40 +47,49 @@ void ABatPet::Tick(float DeltaTime)
 
     if (!PlayerCharacter) return;
 
-    FVector PlayerLocation = PlayerCharacter->GetActorLocation();
-    FVector BatLocation = GetActorLocation();
-    float DistanceToPlayer = FVector::Dist(BatLocation, PlayerLocation);
-
+    // AI Feature
     AAIController* AIController = Cast<AAIController>(GetController());
     if (AIController)
     {
         UBlackboardComponent* Blackboard = AIController->GetBlackboardComponent();
         if (Blackboard)
         {
-            switch (CurrentState)
-            {
-            case EBatPetState::Idle:
-                if (DistanceToPlayer > BatRange_Min)
-                {
-                    FVector DirectionToPlayer = CalculateDirection(PlayerLocation);
-                    MovementComponent->AddInputVector(DirectionToPlayer, true);
-                    LookAtTarget(PlayerLocation, DeltaTime);
-                }
-                break;
-
-            case EBatPetState::MovingToTarget:
-                MoveAndLookAtTarget(DeltaTime, TargetLocation);
-                break;
-
-            case EBatPetState::Waiting:
-                LookAtTarget(PlayerLocation, DeltaTime);
-                break;
-            }
-            
             Blackboard->SetValueAsEnum(TEXT("EnumKey"), static_cast<uint8>(CurrentState));
         }
     }
 
+
+    // Custom state machine
+
+    FVector PlayerLocation = PlayerCharacter->GetActorLocation();
+    FVector BatLocation = GetActorLocation();
+    float DistanceToPlayer = FVector::Dist(BatLocation, PlayerLocation);
+
+    switch (CurrentState)
+    {
+    case EBatPetState::Idle:
+        if (DistanceToPlayer > BatRange_Min)
+        {
+            FVector DirectionToPlayer = CalculateDirection(PlayerLocation);
+            MovementComponent->AddInputVector(DirectionToPlayer, true);
+            LookAtTarget(PlayerLocation, DeltaTime);
+        }
+        break;
+
+    case EBatPetState::MovingToTarget:
+        MoveAndLookAtTarget(DeltaTime, TargetLocation);
+        break;
+
+    case EBatPetState::Waiting:
+        LookAtTarget(PlayerLocation, DeltaTime);
+        break;
+
+    case EBatPetState::Teleported:
+        MovementComponent->StopMovementImmediately();
+        CurrentState=EBatPetState::Waiting;
+        break;
+    }
+    
     UpdateCustomDepthOnMovement();
 }
 
@@ -99,9 +106,22 @@ void ABatPet::CheckToTarget()
     }
 }
 
+void ABatPet::SetOwnerCharacter(ACharacter* OwnerCharacter)
+{
+    PlayerCharacter = OwnerCharacter;
+    AAIController* AIController = Cast<AAIController>(GetController());
+    if (AIController)
+    {
+        UBlackboardComponent* Blackboard = AIController->GetBlackboardComponent();
+        if (Blackboard)
+            Blackboard->SetValueAsObject(TEXT("CharacterActor"), PlayerCharacter);
+    }
+}
+
 void ABatPet::MoveAndLookAtTarget(float DeltaTime, FVector NewTargetLocation)
 {
     FVector DirectionToTarget = CalculateDirection(NewTargetLocation);
+
     MovementComponent->AddInputVector(DirectionToTarget, true);
     LookAtTarget(NewTargetLocation, DeltaTime);
 

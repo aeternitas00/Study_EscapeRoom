@@ -6,6 +6,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/PrimitiveComponent.h"
 
+#include "BatPet.h"
+
 APortal::APortal()
 {
     PrimaryActorTick.bCanEverTick = true;
@@ -33,7 +35,9 @@ void APortal::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherA
             FVector TargetLocationPosition = TargetPortal->TargetLocation->GetComponentLocation();
             FRotator TargetLocationRotation = TargetPortal->TargetLocation->GetComponentRotation();
 
-            OtherActor->SetActorLocationAndRotation(TargetLocationPosition, TargetLocationRotation, false, nullptr, ETeleportType::ResetPhysics);
+            OtherActor->SetActorLocationAndRotation(TargetLocationPosition, TargetLocationRotation, false, nullptr, ETeleportType::TeleportPhysics);
+            Cast<ABatPet>(OtherActor)->CurrentState = EBatPetState::Teleported;
+
         }
     }
 }

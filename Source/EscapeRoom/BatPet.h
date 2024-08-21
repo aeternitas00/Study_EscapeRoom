@@ -13,7 +13,8 @@ enum class EBatPetState : uint8
 {
     Idle,
     MovingToTarget,
-    Waiting
+    Waiting,
+    Teleported,
 };
 
 UCLASS()
@@ -46,6 +47,8 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float RotationSpeed;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enum")
+    EBatPetState CurrentState = EBatPetState::Idle;
 
     // Target Character
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TargetCharacter")
@@ -68,8 +71,6 @@ public:
 
     void UpdateCustomDepthOnMovement();
     void CheckToTarget();
+    void SetOwnerCharacter(ACharacter* OwnerCharacter);
 
-protected:
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enum")
-    EBatPetState CurrentState = EBatPetState::Idle;
 };
