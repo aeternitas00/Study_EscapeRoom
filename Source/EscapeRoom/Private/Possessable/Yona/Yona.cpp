@@ -20,6 +20,9 @@ AYona::AYona()
     FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
     FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
     FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+
+    YonaAbilityComponent = CreateDefaultSubobject<UEscapeRoomYonaAbility>(TEXT("YonaAbility"));
+    YonaAbilityComponent->OwnerYona = this;
 }
 
 void AYona::BeginPlay()
@@ -39,15 +42,6 @@ void AYona::BeginPlay()
 
     if (MyPet) MyPet->SetOwnerCharacter(this);
     
-}
-
-
-void AYona::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-    Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-    PlayerInputComponent->BindAction("MoveDirectButton", IE_Pressed, this, &AYona::MovePetDirect);
-    PlayerInputComponent->BindAction("Switch", IE_Pressed, this, &AYona::SwitchWithPet);
 }
 
 void AYona::MovePetDirect()
@@ -93,4 +87,23 @@ void AYona::SwitchWithPet()
     if (!MyPet) return;
 
     MyPet->SwapWithPlayer();
+}
+
+UEscapeRoomYonaAbility::UEscapeRoomYonaAbility()
+{
+}
+
+void UEscapeRoomYonaAbility::MainAbility_Implementation(const FInputActionInstance& Instance)
+{
+
+}
+
+void UEscapeRoomYonaAbility::SubAbility1_Implementation(const FInputActionInstance& Instance)
+{
+    OwnerYona->MovePetDirect();
+}
+
+void UEscapeRoomYonaAbility::SubAbility2_Implementation(const FInputActionInstance& Instance)
+{
+    OwnerYona->SwitchWithPet();
 }
