@@ -1,0 +1,22 @@
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+#pragma once
+
+#include "NativeGameplayTags.h"
+
+
+namespace EscapeRoomTags
+{
+	ESCAPEROOM_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Move);
+	ESCAPEROOM_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Look);
+	ESCAPEROOM_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Jump); // 라이라에선 어빌리티로 점프를 구현했더라...
+	ESCAPEROOM_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Interact); // 오브젝트 상호작용
+
+	ESCAPEROOM_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_MainAbility); 	
+	ESCAPEROOM_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_SubAbility1); 
+	ESCAPEROOM_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_SubAbility2); 	
+
+	ESCAPEROOM_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InteractionMode_Idle); 
+	ESCAPEROOM_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InteractionMode_Grab); 	
+	//ESCAPEROOM_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Crouch);
+};
