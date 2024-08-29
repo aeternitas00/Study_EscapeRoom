@@ -30,10 +30,10 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void SubAbility1(const FInputActionInstance& Instance);
-	void SubAbility1_Implementation(const FInputActionInstance& Instance){}
+	virtual void SubAbility1_Implementation(const FInputActionInstance& Instance){}
 
 	UFUNCTION(BlueprintNativeEvent)
 	void SubAbility2(const FInputActionInstance& Instance);
-	void SubAbility2_Implementation(const FInputActionInstance& Instance){}
+	virtual void SubAbility2_Implementation(const FInputActionInstance& Instance){}
 };
 

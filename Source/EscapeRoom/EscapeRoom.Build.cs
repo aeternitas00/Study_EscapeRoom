@@ -9,6 +9,7 @@ public class EscapeRoom : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PublicDependencyModuleNames.AddRange(new string[] { 
+			"NavigationSystem", "AIModule", 
 			"Core", "CoreUObject", "Engine", "InputCore", "GameplayTags", "EnhancedInput", "OnlineSubsystem", "OnlineSubsystemSteam" 
 		});
 	}
