@@ -24,13 +24,16 @@ protected:
 	virtual void SendTaggedInputToOwner_Implementation(const FInputActionInstance& Instance, const FGameplayTag& InputTag);
 
 public:	
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintNativeEvent)
 	void MainAbility(const FInputActionInstance& Instance);
+	virtual void MainAbility_Implementation(const FInputActionInstance& Instance){}
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintNativeEvent)
 	void SubAbility1(const FInputActionInstance& Instance);
+	void SubAbility1_Implementation(const FInputActionInstance& Instance){}
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintNativeEvent)
 	void SubAbility2(const FInputActionInstance& Instance);
+	void SubAbility2_Implementation(const FInputActionInstance& Instance){}
 };
 
