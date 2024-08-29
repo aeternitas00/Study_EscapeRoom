@@ -9,9 +9,13 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
+<<<<<<< HEAD
 				"Engine",
 				"CoreUObject",
 				"GameplayTags"
+=======
+				"Engine"
+>>>>>>> SwitchingPet
 			]
 		}
 	],

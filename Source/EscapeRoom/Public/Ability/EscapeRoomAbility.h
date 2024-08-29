@@ -8,6 +8,8 @@
 
 /**
  * Example code
+ * 
+ * ========= DEPRECATED =========
  */
 UCLASS(Blueprintable,Abstract)
 class ESCAPEROOM_API UEscapeRoomAbility : public UObject
