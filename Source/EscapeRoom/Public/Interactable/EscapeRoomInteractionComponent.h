@@ -36,6 +36,7 @@ public:
 protected:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void BindNativeActions(UEnhancedInputComponent* InputComponent) override;
+	virtual void EndPlay(EEndPlayReason::Type) override;
 
 	void GetTracePoints(FVector& outSVec,FVector& outEVec);
 	bool SearchInteractingTarget(TScriptInterface<IEscapeRoomInteractable>& outActor);

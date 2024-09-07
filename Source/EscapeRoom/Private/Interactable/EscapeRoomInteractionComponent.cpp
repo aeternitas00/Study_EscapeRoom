@@ -46,6 +46,14 @@ void UEscapeRoomInteractionComponent::TickComponent(float DeltaTime, ELevelTick 
 			Inspect();
 		}
 	}
+	else
+	{
+		auto OwnerPawn = Cast<APawn>(GetOwner());
+		if(!OwnerPawn) return;
+		
+		// NOTE :: Smoother?
+		OwnerPawn->SetActorRotation({OwnerPawn->GetActorRotation().Pitch,OwnerPawn->GetBaseAimRotation().Yaw,OwnerPawn->GetActorRotation().Roll});
+	}
 }
 
 void UEscapeRoomInteractionComponent::BindNativeActions(UEnhancedInputComponent* InputComponent)
@@ -54,6 +62,12 @@ void UEscapeRoomInteractionComponent::BindNativeActions(UEnhancedInputComponent*
 
 	InputComponent->BindAction(NativeInputActions[EscapeRoomTags::InputTag_Interact], ETriggerEvent::Started, this, &ThisClass::Interact);
 	InputComponent->BindAction(NativeInputActions[EscapeRoomTags::InputTag_Interact], ETriggerEvent::Completed, this, &ThisClass::InteractEnd);
+}
+
+void UEscapeRoomInteractionComponent::EndPlay(EEndPlayReason::Type ER)
+{
+	InspectEnd();
+	Super::EndPlay(ER);
 }
 
 void UEscapeRoomInteractionComponent::GetTracePoints(FVector& outSVec, FVector& outEVec)
