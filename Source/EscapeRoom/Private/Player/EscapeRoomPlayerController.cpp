@@ -5,6 +5,7 @@
 
 #include "Possessable/EscapeRoomCharacterBase.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/FloatingPawnMovement.h"
 
 #include "Interactable/EscapeRoomInteractionComponent.h"
 #include "Input/EscapeRoomIABindableComponent.h"
@@ -41,7 +42,11 @@ void AEscapeRoomPlayerController::BeginPlay()
 
 		EnhancedInputComponent->BindAction(GeneralInputActions[EscapeRoomTags::InputTag_Jump], ETriggerEvent::Started, this, &ThisClass::Jump);
 		EnhancedInputComponent->BindAction(GeneralInputActions[EscapeRoomTags::InputTag_Jump], ETriggerEvent::Completed, this, &ThisClass::JumpEnd);
+		EnhancedInputComponent->BindAction(GeneralInputActions[EscapeRoomTags::InputTag_Jump], ETriggerEvent::Triggered, this, &ThisClass::FlyUp);
 
+		EnhancedInputComponent->BindAction(GeneralInputActions[EscapeRoomTags::InputTag_Crouch], ETriggerEvent::Started, this, &ThisClass::Crouch);
+		EnhancedInputComponent->BindAction(GeneralInputActions[EscapeRoomTags::InputTag_Crouch], ETriggerEvent::Completed, this, &ThisClass::UnCrouch);
+		EnhancedInputComponent->BindAction(GeneralInputActions[EscapeRoomTags::InputTag_Crouch], ETriggerEvent::Triggered, this, &ThisClass::FlyDown);
 	}
 	else
 	{
@@ -65,16 +70,19 @@ void AEscapeRoomPlayerController::Move(const FInputActionValue& Value)
 	const FRotator Rotation = GetControlRotation();
 	const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-	// get forward vector
-	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+	// TEMP
+	bool MovementFlag = !LocalPawn->GetComponentByClass<UFloatingPawnMovement>();
 
-	// get right vector 
-	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-	// add movement 
-	LocalPawn->AddMovementInput(ForwardDirection, MovementVector.Y);
-	LocalPawn->AddMovementInput(RightDirection, MovementVector.X);
-	
+	if (MovementFlag)
+	{
+		LocalPawn->AddMovementInput( FRotationMatrix(YawRotation).GetUnitAxis( EAxis::X ), MovementVector.Y);
+		LocalPawn->AddMovementInput( FRotationMatrix(YawRotation).GetUnitAxis( EAxis::Y ), MovementVector.X);
+	}
+	else 
+	{
+		LocalPawn->AddMovementInput( FRotationMatrix(Rotation).GetScaledAxis( EAxis::X ), MovementVector.Y );
+		LocalPawn->AddMovementInput( FRotationMatrix(Rotation).GetScaledAxis( EAxis::Y ), MovementVector.X );
+	}
 }
 
 void AEscapeRoomPlayerController::Look(const FInputActionValue& Value)
@@ -103,3 +111,41 @@ void AEscapeRoomPlayerController::JumpEnd(const FInputActionValue& Value)
 	LocalPawn->StopJumping();
 }
 
+void AEscapeRoomPlayerController::Crouch(const FInputActionValue& Value)
+{
+	auto LocalPawn = Cast<ACharacter>(GetPawn());
+	if (!LocalPawn) return;
+	LocalPawn->Crouch();
+}
+
+void AEscapeRoomPlayerController::UnCrouch(const FInputActionValue& Value)
+{
+	auto LocalPawn = Cast<ACharacter>(GetPawn());
+	if (!LocalPawn) return;
+	LocalPawn->UnCrouch();
+}
+
+void AEscapeRoomPlayerController::FlyUp(const FInputActionValue& Value)
+{
+	auto LocalPawn = Cast<ACharacter>(GetPawn());
+	if (!LocalPawn) return;
+
+	// TEMP
+	if(!!LocalPawn->GetComponentByClass<UFloatingPawnMovement>())
+	{
+		UE_LOG(LogTemplateCharacter,Display,TEXT("FLOATING UP"));
+		LocalPawn->AddMovementInput(FVector::UpVector, Value.GetMagnitude());
+	}
+}
+
+void AEscapeRoomPlayerController::FlyDown(const FInputActionValue& Value)
+{
+	auto LocalPawn = Cast<ACharacter>(GetPawn());
+	if (!LocalPawn) return;
+	// TEMP
+	if(!!LocalPawn->GetComponentByClass<UFloatingPawnMovement>())
+	{
+		UE_LOG(LogTemplateCharacter,Display,TEXT("FLOATING DOWN"));
+		LocalPawn->AddMovementInput(FVector::DownVector, Value.GetMagnitude());
+	}
+}

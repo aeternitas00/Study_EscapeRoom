@@ -14,4 +14,8 @@ class ESCAPEROOM_API UEscapeRoomCheatManager : public UCheatManager
 {
 	GENERATED_BODY()
 	
+public:
+
+	UFUNCTION(Exec)
+	void TGM();
 };
