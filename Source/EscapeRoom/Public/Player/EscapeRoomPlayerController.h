@@ -45,6 +45,10 @@ protected:
 	void Look(const FInputActionValue& Value);
 	void Jump(const FInputActionValue& Value);
 	void JumpEnd(const FInputActionValue& Value);
+	void Crouch(const FInputActionValue& Value);
+	void UnCrouch(const FInputActionValue& Value);
+	void FlyUp(const FInputActionValue& Value);
+	void FlyDown(const FInputActionValue& Value);
 
 	// 이런 태그드 인풋 처리하는 커스텀 인풋 컴포넌트 구현?
 	//void SendTaggedInputToPawn(const FInputActionInstance& Instance, const FGameplayTag& InputTag);

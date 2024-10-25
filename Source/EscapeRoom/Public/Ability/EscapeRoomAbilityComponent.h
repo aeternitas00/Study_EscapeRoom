@@ -37,3 +37,26 @@ public:
 	virtual void SubAbility2_Implementation(const FInputActionInstance& Instance){}
 };
 
+
+
+
+UCLASS( Blueprintable, ClassGroup=(Interact), meta=(BlueprintSpawnableComponent) )
+class ESCAPEROOM_API UEscapeRoomLarsAbilityComponent : public UEscapeRoomAbilityComponent
+{
+	GENERATED_BODY()
+
+protected:
+
+public:	
+	// Sets default values for this component's properties
+	//UEscapeRoomLarsAbilityComponent();
+
+protected:	
+	//virtual void SendTaggedInputToOwner_Implementation(const FInputActionInstance& Instance, const FGameplayTag& InputTag);
+
+public:	
+	virtual void MainAbility_Implementation(const FInputActionInstance& Instance){}
+	virtual void SubAbility1_Implementation(const FInputActionInstance& Instance){}
+	virtual void SubAbility2_Implementation(const FInputActionInstance& Instance){}
+
+};
