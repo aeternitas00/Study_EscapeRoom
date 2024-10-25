@@ -4,7 +4,7 @@
 
 #include "EscapeRoom.h"
 #include "Possessable/EscapeRoomCharacterBase.h"
-
+#include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Ability/EscapeRoomAbilityComponent.h"
 #include "Lars.generated.h"
 
@@ -38,6 +38,17 @@ public:
 	// Sets default values for this character's properties
 	ALars();
 
+	UFUNCTION(BlueprintCallable, Category = "Abilities")
+	void ToggleMagnetism();
+
+	UFUNCTION(BlueprintCallable, Category = "Abilities")
+	void ToggleChargeState();
+
+	UFUNCTION(BlueprintCallable, Category = "Abilities")
+	void ApplyForceBasedOnCharge(AActor* Actor, FVector ImpactPoint);
+	UPROPERTY(BlueprintReadOnly, Category = "Abilities")
+	TObjectPtr<AActor> TargetedObject;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -53,4 +64,6 @@ private:
 	TObjectPtr<UEscapeRoomLarsAbility> LarsAbilityComponent;
 
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	bool bIsMagnetActive;
+	enum class EChargeState { Positive, Negative } CurrentChargeState;
 };
