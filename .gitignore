@@ -3,6 +3,9 @@
 # Edit at https://www.gitignore.io/?templates=unrealengine,visualstudio
 
 ### UnrealEngine ###
+
+.idea/
+
 # Visual Studio 2015 user specific files
 .vs/
 
